@@ -1,12 +1,15 @@
 package controllers;
 
+import io.vavr.control.Try;
 import models.Planet;
+import play.http.HttpEntity;
 import play.libs.Json;
 import play.mvc.*;
 import services.StartWarsClient;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
+import services.UniverseCreator;
 
 /**
  * This controller contains an action to handle HTTP requests
@@ -38,4 +41,13 @@ public class HomeController extends Controller {
         });
     }
 
+    public CompletionStage<Result> planetById(Long id) {
+        return this.client.getPlanetById(id)
+                .thenApply(jsonPlanet -> Json.fromJson(jsonPlanet, Planet.class))
+                .thenApply(planet -> new UniverseCreator(this.client).createFrom(planet))
+                .thenApply(universeFuture -> Try.of(() -> ok(universeFuture.get().toString())))
+                .thenApply(tryResult -> tryResult.getOrElseGet(
+                        error -> new Result(500, HttpEntity.fromString(error.getMessage(), "utf-8")))
+                );
+    }
 }
