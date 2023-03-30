@@ -27,4 +27,15 @@ public class StartWarsClient {
                 .thenApply(WSResponse::asJson);
     }
 
+    public CompletionStage<JsonNode> getPlanetById(Long id) {
+        return ws.url(apiUrl + "planets/" + id)
+                .get()
+                .thenApply(WSResponse::asJson);
+    }
+
+    public CompletionStage<JsonNode> getResidentByUrl(String url) {
+        return ws.url(url)
+                .get()
+                .thenApply(WSResponse::asJson);
+    }
 }
